@@ -6,15 +6,28 @@ import {
 import { Editor } from "./components/Editor";
 import { useUiStore } from "./lib/store";
 import { AppSidebar } from "./components/AppSidebar";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
+import { useEffect } from "react";
 
 export default function App() {
-  const shwoSidebar = useUiStore((state) => state.shwoSidebar);
+  const { showSidebar, setTree, savePath } = useUiStore();
+
+  useEffect(() => {
+    async function run() {
+      if (savePath !== null) {
+        const data = await window.api.getFiles(savePath);
+        if (data.success) {
+          setTree(data.tree);
+        }
+      }
+    }
+    run();
+  }, []);
 
   return (
     <SidebarProvider>
       <ResizablePanelGroup direction="horizontal" className="min-h-[100dvh]">
-        {shwoSidebar && (
+        {showSidebar && (
           <>
             <ResizablePanel id="sidebar" defaultSize={25} order={1}>
               <AppSidebar />

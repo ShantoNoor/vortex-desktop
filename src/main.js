@@ -1,7 +1,8 @@
-import { app, BrowserWindow, dialog, ipcMain } from "electron";
+import { app, BrowserWindow, dialog, ipcMain, Menu } from "electron";
+import fs from "fs/promises";
 import path from "node:path";
 import started from "electron-squirrel-startup";
-import fs from "fs";
+import { addFiles, getFiles } from "./lib/imagefs";
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (started) {
@@ -9,10 +10,12 @@ if (started) {
 }
 
 const createWindow = () => {
+  Menu.setApplicationMenu(null);
+
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 1280,
-    height: 720,
+    width: 1400,
+    height: 800,
     backgroundColor: "#222",
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
@@ -68,22 +71,111 @@ ipcMain.handle("select-folder", async () => {
 
   const folderPath = result.filePaths[0];
 
-  function readDirRecursive(dir) {
-    const items = fs.readdirSync(dir, { withFileTypes: true });
-    return items.map((item) => {
-      const fullPath = path.join(dir, item.name);
-      return item.isDirectory()
-        ? {
-            type: "folder",
-            name: item.name,
-            children: readDirRecursive(fullPath),
-          }
-        : { type: "file", name: item.name };
-    });
+  try {
+    const files = await readDirRecursive(folderPath);
+    return { success: true, tree: files, path: folderPath };
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+});
+
+ipcMain.handle("get-files", async (event, folderPath) => {
+  try {
+    const files = await readDirRecursive(folderPath);
+    return { success: true, tree: files };
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+});
+
+ipcMain.handle("save-file", async (event, payload) => {
+  let { activeFolder, elements, appState, files, savePath } = payload;
+
+  try {
+    // 1️⃣ If no active folder, let user choose
+    if (!activeFolder) {
+      const result = await dialog.showOpenDialog({
+        properties: ["openDirectory", "createDirectory"],
+        defaultPath: activeFolder || savePath,
+      });
+
+      if (result.canceled || !result.filePaths.length) {
+        return { success: false, reason: "canceled" };
+      }
+
+      activeFolder = result.filePaths[0];
+    }
+
+    // 3️⃣ Save drawing.json
+    const filePath = path.join(
+      activeFolder,
+      `${path.basename(activeFolder)}.json`
+    );
+
+    const { collaborators, width, height, ...rest } = appState;
+    const fileContent = JSON.stringify({ elements, appState: rest }, null, 2);
+
+    await fs.writeFile(filePath, fileContent, "utf-8");
+
+    const filesArray = Object.values(files);
+    await addFiles(filesArray, activeFolder);
+
+    return { success: true, activeFolder };
+  } catch (error) {
+    console.error("Failed to save file:", error);
+    // Return the error to the renderer so the UI can show a notification
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle("open-file", async (event, activeFolder) => {
+  try {
+    // 3️⃣ Save drawing.json
+    const filePath = path.join(
+      activeFolder,
+      `${path.basename(activeFolder)}.json`
+    );
+
+    const fileContent = await fs.readFile(filePath, "utf-8");
+    const data = JSON.parse(fileContent);
+    const { elements, appState } = data;
+
+    const files = await getFiles(
+      elements.filter((e) => e.type === "image").map((e) => e.fileId),
+      activeFolder
+    );
+
+    return { success: true, elements, appState, files };
+  } catch (error) {
+    console.error("Failed to open file:", error);
+    // Return the error to the renderer so the UI can show a notification
+    return { success: false, error: error.message };
+  }
+});
+
+export async function readDirRecursive(dir) {
+  const items = await fs.readdir(dir, { withFileTypes: true });
+
+  const result = [];
+
+  for (const item of items) {
+    const fullPath = path.join(dir, item.name);
+
+    if (item.name === "images") {
+      continue;
+    }
+
+    if (item.isDirectory()) {
+      const children = await readDirRecursive(fullPath);
+
+      const target = path.basename(fullPath) + ".json";
+      if (children.find((c) => c.name === target))
+        result.push({ name: item.name, path: fullPath });
+      else result.push([item.name, ...children]);
+    } else {
+      result.push({ name: item.name, path: fullPath });
+    }
   }
 
-  return {
-    path: folderPath,
-    tree: readDirRecursive(folderPath),
-  };
-});
+  return result;
+}
