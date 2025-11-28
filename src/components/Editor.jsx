@@ -5,7 +5,7 @@ import {
   Footer,
 } from "@excalidraw/excalidraw";
 import "@excalidraw/excalidraw/index.css";
-import { PanelRightClose, Save, Sidebar } from "lucide-react";
+import { ArrowLeftToLine, Sidebar } from "lucide-react";
 import { useUiStore } from "../lib/store";
 import { useEffect, useRef, useState } from "react";
 import { Loader } from "./Loader";
@@ -100,23 +100,37 @@ export const Editor = () => {
             clearTimeout(timeoutId.current);
           }
           timeoutId.current = setTimeout(() => {
-            handleSave(elements, appState, files);
+            handleSave(elements, appState, []);
           }, 250);
         }
       }}
     >
       <MainMenu>
-        <MainMenu.Item icon={<Save />} onClick={saveFile}>
+        <MainMenu.Item
+          icon={<ArrowLeftToLine strokeWidth={1.5} />}
+          onClick={saveFile}
+        >
           Save
         </MainMenu.Item>
-        <MainMenu.Item icon={<PanelRightClose />} onClick={toggleSidebar}>
+        <MainMenu.Item
+          icon={<Sidebar strokeWidth={1.5} />}
+          onClick={toggleSidebar}
+        >
           Toggle Sidebar
         </MainMenu.Item>
+        <MainMenu.Separator />
+        <MainMenu.DefaultItems.LoadScene />
+        <MainMenu.DefaultItems.Export />
+        <MainMenu.DefaultItems.SaveAsImage />
         <MainMenu.Separator />
         <MainMenu.DefaultItems.ChangeCanvasBackground />
       </MainMenu>
       <Footer>
-        <Button className="ml-2 p-4" variant="outline" onClick={toggleSidebar}>
+        <Button
+          className="ml-2 p-4 bg-[#28292c]! border! border-[#191919]!"
+          variant="outline"
+          onClick={toggleSidebar}
+        >
           <Sidebar className="size-4" />
         </Button>
       </Footer>

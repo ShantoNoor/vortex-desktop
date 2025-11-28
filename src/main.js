@@ -1,6 +1,6 @@
 import { app, BrowserWindow, dialog, ipcMain, Menu } from "electron";
 import fs from "fs/promises";
-import path, { basename } from "node:path";
+import path from "node:path";
 import started from "electron-squirrel-startup";
 import { addFiles, getFiles } from "./lib/imagefs";
 

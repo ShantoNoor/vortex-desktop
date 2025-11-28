@@ -1,5 +1,5 @@
-import fs from "fs/promises"; // Fixed: Import 'promises' version to use await
-import path from "path"; // Fixed: Missing path import
+import fs from "fs/promises";
+import path from "path";
 
 let ids = new Set();
 
