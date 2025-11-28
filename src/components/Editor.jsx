@@ -134,7 +134,6 @@ export const Editor = () => {
         gridSize,
         gridStep,
         gridModeEnabled,
-        name,
         scrollX,
         scrollY,
         viewBackgroundColor,

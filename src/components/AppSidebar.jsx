@@ -59,11 +59,11 @@ export function AppSidebar() {
   return (
     <>
       <title>{activeFolder || "Undefined"}</title>
-      <SidebarContent className="overflow-x-hidden">
+      <SidebarContent className="overflow-x-hidden h-dvh no-scrollbar">
         <SidebarGroup>
           <SidebarGroupLabel>Actions</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="min-w-screen">
               {actions.map((item, index) => (
                 <SidebarMenuItem key={index} onClick={item.onClick}>
                   <SidebarMenuButton>
@@ -75,10 +75,10 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-        <SidebarGroup>
+        <SidebarGroup className="">
           <SidebarGroupLabel>{savePath}</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="min-w-screen">
               {tree?.map((item, index) => (
                 <Tree key={index} item={item} />
               ))}

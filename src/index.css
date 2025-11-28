@@ -122,6 +122,12 @@
   }
 }
 
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 body {
   background-color: #222;
 }

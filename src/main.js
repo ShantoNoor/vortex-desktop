@@ -32,7 +32,7 @@ const createWindow = () => {
   }
 
   // Open the DevTools.
-  mainWindow.webContents.openDevTools();
+  // mainWindow.webContents.openDevTools();
 };
 
 // This method will be called when Electron has finished
@@ -112,7 +112,14 @@ ipcMain.handle("save-file", async (event, payload) => {
       `${path.basename(activeFolder)}.json`
     );
 
-    const fileContent = JSON.stringify({ elements, appState }, null, 2);
+    const fileContent = JSON.stringify(
+      {
+        elements,
+        appState: { ...appState, name: path.basename(activeFolder) },
+      },
+      null,
+      2
+    );
 
     await fs.writeFile(filePath, fileContent, "utf-8");
 
