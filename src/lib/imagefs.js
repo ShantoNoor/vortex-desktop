@@ -32,7 +32,6 @@ export async function addFiles(fileList, activeFolder) {
 }
 
 export async function getFiles(idList, activeFolder) {
-  // Warning: This overwrites the global set. Ensure this is intended behavior.
   ids = new Set(idList);
   const imagesDir = path.join(activeFolder, "images");
 
@@ -53,10 +52,37 @@ export async function getFiles(idList, activeFolder) {
 
     const results = await Promise.all(filePromises);
 
+    await deleteUnwantedFiles(
+      path.join(activeFolder, "images"),
+      idList.map((file) => `${file}.json`)
+    );
+
     // Filter out any nulls from failed reads
     return results.filter((file) => file !== null);
   } catch (error) {
     console.error(`Failed to get files process: ${error.message}`);
     return [];
+  }
+}
+
+async function deleteUnwantedFiles(folderPath, allowedFiles) {
+  try {
+    // Read all files from the folder
+    const items = await fs.readdir(folderPath);
+
+    // Loop through each file
+    for (const item of items) {
+      const fullPath = path.join(folderPath, item);
+
+      // If file is not inside the allowed list → delete it
+      if (!allowedFiles.includes(item)) {
+        await fs.unlink(fullPath);
+        // console.log("Deleted:", item);
+      }
+    }
+
+    // console.log("Cleanup complete!");
+  } catch (error) {
+    console.error("Error:", error);
   }
 }

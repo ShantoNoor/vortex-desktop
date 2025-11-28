@@ -1,6 +1,6 @@
 import { app, BrowserWindow, dialog, ipcMain, Menu } from "electron";
 import fs from "fs/promises";
-import path from "node:path";
+import path, { basename } from "node:path";
 import started from "electron-squirrel-startup";
 import { addFiles, getFiles } from "./lib/imagefs";
 
@@ -113,7 +113,11 @@ ipcMain.handle("save-file", async (event, payload) => {
     );
 
     const { collaborators, width, height, ...rest } = appState;
-    const fileContent = JSON.stringify({ elements, appState: rest }, null, 2);
+    const fileContent = JSON.stringify(
+      { elements, appState: { ...rest, name: path.basename(activeFolder) } },
+      null,
+      2
+    );
 
     await fs.writeFile(filePath, fileContent, "utf-8");
 
@@ -138,7 +142,8 @@ ipcMain.handle("open-file", async (event, activeFolder) => {
 
     const fileContent = await fs.readFile(filePath, "utf-8");
     const data = JSON.parse(fileContent);
-    const { elements, appState } = data;
+    const { elements: allElements, appState } = data;
+    const elements = allElements.filter((el) => !el.isDeleted);
 
     const files = await getFiles(
       elements.filter((e) => e.type === "image").map((e) => e.fileId),
