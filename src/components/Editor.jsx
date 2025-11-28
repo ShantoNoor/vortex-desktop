@@ -11,6 +11,8 @@ import { useEffect, useRef, useState } from "react";
 import { Loader } from "./Loader";
 import { Button } from "./ui/button";
 
+let ids = new Set([]);
+
 const initialData = {
   appState: { viewBackgroundColor: "#222" },
 };
@@ -33,6 +35,7 @@ export const Editor = () => {
 
   useEffect(() => {
     setLoading(true);
+    ids = new Set([]);
 
     setTimeout(() => {
       setLoading(false);
@@ -42,9 +45,17 @@ export const Editor = () => {
   useEffect(() => {
     async function run() {
       if (activeFolder && excalidrawAPI) {
+        excalidrawAPI.setToast({
+          message: `Loading, wait ...`,
+          closable: false,
+          duration: Infinity,
+        });
+
         const data = await window.api.openFile(activeFolder);
 
         if (data.success) {
+          ids = new Set(data.idList);
+
           excalidrawAPI.updateScene({
             elements: data.elements,
             appState: data.appState,
@@ -55,22 +66,132 @@ export const Editor = () => {
         }
 
         setAutoSave(true);
+        excalidrawAPI.setToast(null);
       }
     }
     run();
   }, [excalidrawAPI]);
 
   const handleSave = async (elements, appState, files) => {
+    const fileList = Object.values(files);
+    const newlyAddedFiles = fileList.filter((file) => !ids.has(file.id));
+
+    const {
+      showWelcomeScreen,
+      theme,
+      currentChartType,
+      currentItemBackgroundColor,
+      currentItemEndArrowhead,
+      currentItemFillStyle,
+      currentItemFontFamily,
+      currentItemFontSize,
+      currentItemOpacity,
+      currentItemRoughness,
+      currentItemStrokeColor,
+      currentItemRoundness,
+      currentItemArrowType,
+      currentItemStrokeStyle,
+      currentItemStrokeWidth,
+      currentItemTextAlign,
+      cursorButton,
+      penMode,
+      penDetected,
+      exportBackground,
+      exportScale,
+      exportEmbedScene,
+      exportWithDarkMode,
+      gridSize,
+      gridStep,
+      gridModeEnabled,
+      isBindingEnabled,
+      defaultSidebarDockedPreference,
+      isLoading,
+      isResizing,
+      isRotating,
+      lastPointerDownWith,
+      name,
+      scrolledOutside,
+      scrollX,
+      scrollY,
+      selectedElementsAreBeingDragged,
+      shouldCacheIgnoreZoom,
+      stats,
+      frameRendering,
+      viewBackgroundColor,
+      zenModeEnabled,
+      zoom,
+      viewModeEnabled,
+      showHyperlinkPopup,
+      originSnapOffset,
+      objectsSnapModeEnabled,
+      isCropping,
+      offsetLeft,
+      offsetTop,
+    } = appState;
+
     const data = await window.api.handleSave({
       activeFolder,
       elements,
-      files,
-      appState,
+      fileList: newlyAddedFiles,
+      appState: {
+        showWelcomeScreen,
+        theme,
+        currentChartType,
+        currentItemBackgroundColor,
+        currentItemEndArrowhead,
+        currentItemFillStyle,
+        currentItemFontFamily,
+        currentItemFontSize,
+        currentItemOpacity,
+        currentItemRoughness,
+        currentItemStrokeColor,
+        currentItemRoundness,
+        currentItemArrowType,
+        currentItemStrokeStyle,
+        currentItemStrokeWidth,
+        currentItemTextAlign,
+        cursorButton,
+        penMode,
+        penDetected,
+        exportBackground,
+        exportScale,
+        exportEmbedScene,
+        exportWithDarkMode,
+        gridSize,
+        gridStep,
+        gridModeEnabled,
+        isBindingEnabled,
+        defaultSidebarDockedPreference,
+        isLoading,
+        isResizing,
+        isRotating,
+        lastPointerDownWith,
+        name,
+        scrolledOutside,
+        scrollX,
+        scrollY,
+        selectedElementsAreBeingDragged,
+        shouldCacheIgnoreZoom,
+        stats,
+        frameRendering,
+        viewBackgroundColor,
+        zenModeEnabled,
+        zoom,
+        viewModeEnabled,
+        showHyperlinkPopup,
+        originSnapOffset,
+        objectsSnapModeEnabled,
+        isCropping,
+        offsetLeft,
+        offsetTop,
+      },
       savePath,
     });
 
     if (data.success && activeFolder === null) {
       setActiveFolder(data.activeFolder);
+      newlyAddedFiles.forEach((file) => ids.add(file.id));
+
       const data2 = await window.api.getFiles(savePath);
       if (data2.success) {
         setTree(data2.tree);
@@ -100,7 +221,7 @@ export const Editor = () => {
             clearTimeout(timeoutId.current);
           }
           timeoutId.current = setTimeout(() => {
-            handleSave(elements, appState, []);
+            handleSave(elements, appState, files);
           }, 250);
         }
       }}

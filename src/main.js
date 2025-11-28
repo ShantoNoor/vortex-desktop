@@ -89,7 +89,7 @@ ipcMain.handle("get-files", async (event, folderPath) => {
 });
 
 ipcMain.handle("save-file", async (event, payload) => {
-  let { activeFolder, elements, appState, files, savePath } = payload;
+  let { activeFolder, elements, appState, fileList, savePath } = payload;
 
   try {
     // 1️⃣ If no active folder, let user choose
@@ -112,17 +112,11 @@ ipcMain.handle("save-file", async (event, payload) => {
       `${path.basename(activeFolder)}.json`
     );
 
-    const { collaborators, width, height, ...rest } = appState;
-    const fileContent = JSON.stringify(
-      { elements, appState: { ...rest, name: path.basename(activeFolder) } },
-      null,
-      2
-    );
+    const fileContent = JSON.stringify({ elements, appState }, null, 2);
 
     await fs.writeFile(filePath, fileContent, "utf-8");
 
-    const filesArray = Object.values(files);
-    await addFiles(filesArray, activeFolder);
+    await addFiles(fileList, activeFolder);
 
     return { success: true, activeFolder };
   } catch (error) {
@@ -145,12 +139,13 @@ ipcMain.handle("open-file", async (event, activeFolder) => {
     const { elements: allElements, appState } = data;
     const elements = allElements.filter((el) => !el.isDeleted);
 
-    const files = await getFiles(
-      elements.filter((e) => e.type === "image").map((e) => e.fileId),
-      activeFolder
-    );
+    const idList = elements
+      .filter((e) => e.type === "image")
+      .map((e) => e.fileId);
 
-    return { success: true, elements, appState, files };
+    const files = await getFiles(idList, activeFolder);
+
+    return { success: true, elements, appState, files, idList };
   } catch (error) {
     console.error("Failed to open file:", error);
     // Return the error to the renderer so the UI can show a notification

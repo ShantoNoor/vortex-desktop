@@ -1,8 +1,6 @@
 import fs from "fs/promises";
 import path from "path";
 
-let ids = new Set();
-
 export async function addFiles(fileList, activeFolder) {
   const imagesDir = path.join(activeFolder, "images");
 
@@ -10,12 +8,9 @@ export async function addFiles(fileList, activeFolder) {
     // 1. Ensure directory exists before writing
     await fs.mkdir(imagesDir, { recursive: true });
 
-    const newlyAddedFiles = fileList.filter((file) => !ids.has(file.id));
-
     // 2. Use Promise.all for concurrent writing (much faster than sequential loop)
     await Promise.all(
-      newlyAddedFiles.map(async (newFile) => {
-        ids.add(newFile.id);
+      fileList.map(async (newFile) => {
         try {
           await fs.writeFile(
             path.join(imagesDir, `${newFile.id}.json`),
@@ -32,7 +27,6 @@ export async function addFiles(fileList, activeFolder) {
 }
 
 export async function getFiles(idList, activeFolder) {
-  ids = new Set(idList);
   const imagesDir = path.join(activeFolder, "images");
 
   try {
