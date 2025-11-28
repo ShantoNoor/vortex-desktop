@@ -5,7 +5,12 @@ import {
   Footer,
 } from "@excalidraw/excalidraw";
 import "@excalidraw/excalidraw/index.css";
-import { ArrowLeftToLine, Sidebar } from "lucide-react";
+import {
+  ArrowLeftToLine,
+  LockKeyhole,
+  LockKeyholeOpen,
+  Sidebar,
+} from "lucide-react";
 import { useUiStore } from "../lib/store";
 import { useEffect, useRef, useState } from "react";
 import { Loader } from "./Loader";
@@ -163,6 +168,34 @@ export const Editor = () => {
     setAutoSave(true);
   };
 
+  const lockAllElements = () => {
+    const elements = excalidrawAPI.getSceneElements();
+
+    excalidrawAPI.updateScene({
+      elements: elements.map((el) => {
+        return {
+          ...el,
+          locked: true,
+        };
+      }),
+      captureUpdate: CaptureUpdateAction.IMMEDIATELY,
+    });
+  };
+
+  const unlockAllElements = () => {
+    const elements = excalidrawAPI.getSceneElements();
+
+    excalidrawAPI.updateScene({
+      elements: elements.map((el) => {
+        return {
+          ...el,
+          locked: false,
+        };
+      }),
+      captureUpdate: CaptureUpdateAction.IMMEDIATELY,
+    });
+  };
+
   const zoom = (v) => {
     excalidrawAPI.updateScene({
       appState: {
@@ -255,6 +288,18 @@ export const Editor = () => {
           onClick={toggleSidebar}
         >
           Toggle Sidebar
+        </MainMenu.Item>
+        <MainMenu.Item
+          icon={<LockKeyhole strokeWidth={1.5} />}
+          onClick={lockAllElements}
+        >
+          Lock All Elements
+        </MainMenu.Item>
+        <MainMenu.Item
+          icon={<LockKeyholeOpen strokeWidth={1.5} />}
+          onClick={unlockAllElements}
+        >
+          Unlock All Elements
         </MainMenu.Item>
         <MainMenu.Separator />
         <MainMenu.DefaultItems.LoadScene />

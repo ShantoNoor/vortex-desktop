@@ -95,7 +95,7 @@ function Tree({ item }) {
   const [name, ...items] = Array.isArray(item) ? item : [item];
   const { setActiveFolder, activeFolder, autoSave } = useUiStore();
 
-  if (!items.length) {
+  if (typeof name !== "string") {
     return (
       <SidebarMenuItem>
         <SidebarMenuButton

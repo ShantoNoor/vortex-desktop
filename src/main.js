@@ -32,7 +32,7 @@ const createWindow = () => {
   }
 
   // Open the DevTools.
-  // mainWindow.webContents.openDevTools();
+  mainWindow.webContents.openDevTools();
 };
 
 // This method will be called when Electron has finished
@@ -169,9 +169,11 @@ export async function readDirRecursive(dir) {
       const children = await readDirRecursive(fullPath);
 
       const target = path.basename(fullPath) + ".json";
-      if (children.find((c) => c.name === target))
+      if (children.find((c) => c.name === target)) {
         result.push({ name: item.name, path: fullPath });
-      else result.push([item.name, ...children]);
+      } else {
+        result.push([item.name, ...children]);
+      }
     } else {
       result.push({ name: item.name, path: fullPath });
     }
