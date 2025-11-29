@@ -7,6 +7,7 @@ import {
 import "@excalidraw/excalidraw/index.css";
 import {
   ArrowLeftToLine,
+  FileText,
   Images,
   LockKeyhole,
   LockKeyholeOpen,
@@ -18,6 +19,14 @@ import { Loader } from "./Loader";
 import { Button } from "./ui/button";
 import { fileToBase64, generateUUID, getImageDimensions } from "../lib/utils";
 import imageCompression from "browser-image-compression";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
 
 let ids = new Set([]);
 
@@ -30,6 +39,7 @@ export const Editor = () => {
   const imagesOpenRef = useRef(null);
   const [excalidrawAPI, setExcalidrawAPI] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [pdfOpen, setPdfOpen] = useState(true);
 
   const {
     toggleSidebar,
@@ -334,6 +344,18 @@ export const Editor = () => {
     insertImages(files);
   };
 
+  const handlePDFImport = (e) => {
+    setPdfOpen(false);
+    e.preventDefault();
+
+    const form = e.target;
+    const file = form.pdfFile.files[0];
+    const segmentPerPage = form.segmentPerPage.value;
+
+    console.log("FILE:", file);
+    console.log("Segments:", segmentPerPage);
+  };
+
   useEffect(() => {
     const handler = (e) => {
       if (e.key === "n") {
@@ -396,6 +418,14 @@ export const Editor = () => {
             Insert Images
           </MainMenu.Item>
           <MainMenu.Item
+            icon={<FileText strokeWidth={1.5} />}
+            onSelect={() => {
+              setPdfOpen(true);
+            }}
+          >
+            Import PDF
+          </MainMenu.Item>
+          <MainMenu.Item
             icon={<LockKeyhole strokeWidth={1.5} />}
             onClick={lockAllElements}
           >
@@ -425,7 +455,7 @@ export const Editor = () => {
         </Footer>
       </Excalidraw>
 
-      <input
+      <Input
         ref={imagesOpenRef}
         type="file"
         multiple
@@ -435,6 +465,29 @@ export const Editor = () => {
           display: "none",
         }}
       />
+
+      <Dialog open={pdfOpen} onOpenChange={setPdfOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Import PDF</DialogTitle>
+          </DialogHeader>
+          <form className="space-y-2" onSubmit={handlePDFImport}>
+            <Label>Select PDF File</Label>
+            <Input name="pdfFile" type="file" id="SelectPDF" />
+            <Label htmlFor="SegmentPerPage">Segment Par Page</Label>
+            <Input
+              name="segmentPerPage"
+              type="number"
+              id="SegmentPerPage"
+              defaultValue={1}
+              min={1}
+            />
+            <Button className="mt-2 w-full" variant="outline" type="submit">
+              Import
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };
