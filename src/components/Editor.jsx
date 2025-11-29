@@ -7,6 +7,7 @@ import {
 import "@excalidraw/excalidraw/index.css";
 import {
   ArrowLeftToLine,
+  Images,
   LockKeyhole,
   LockKeyholeOpen,
   Sidebar,
@@ -15,6 +16,8 @@ import { useUiStore } from "../lib/store";
 import { useEffect, useRef, useState } from "react";
 import { Loader } from "./Loader";
 import { Button } from "./ui/button";
+import { fileToBase64, generateUUID, getImageDimensions } from "../lib/utils";
+import imageCompression from "browser-image-compression";
 
 let ids = new Set([]);
 
@@ -24,6 +27,7 @@ const initialData = {
 
 export const Editor = () => {
   const timeoutId = useRef("");
+  const imagesOpenRef = useRef(null);
   const [excalidrawAPI, setExcalidrawAPI] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -234,6 +238,105 @@ export const Editor = () => {
     }
   };
 
+  const insertImages = async (files, gap = 20) => {
+    excalidrawAPI.setToast({
+      message: `Inserting Images ...`,
+      closable: false,
+      duration: Infinity,
+    });
+
+    let x = 0;
+    let y = 0;
+
+    const filesArray = [];
+    const elementsArray = [];
+
+    const options = {
+      maxSizeMB: 1,
+      useWebWorker: true,
+    };
+
+    for (const file of files) {
+      const fileToAdd = await imageCompression(file, options);
+      const base64 = await fileToBase64(fileToAdd);
+
+      // Load image to get width and height
+      let { width, height } = await getImageDimensions(base64);
+
+      const imageId = generateUUID();
+      const elementId = generateUUID();
+
+      let scale = 1;
+      if (gap === 0 && width < chunkWidth) {
+        scale = chunkWidth / width;
+        width = chunkWidth;
+        height = height * scale;
+      }
+
+      const imageElement = {
+        id: elementId,
+        type: "image",
+        x,
+        y,
+        width,
+        height,
+        angle: 0,
+        strokeColor: "transparent",
+        backgroundColor: "transparent",
+        fillStyle: "solid",
+        strokeWidth: 2,
+        strokeStyle: "solid",
+        roughness: 1,
+        opacity: 100,
+        groupIds: [],
+        frameId: null,
+        roundness: null,
+        version: 1,
+        versionNonce: Math.floor(Math.random() * 1000000),
+        isDeleted: false,
+        boundElements: null,
+        updated: Date.now(),
+        link: null,
+        locked: false,
+        status: "pending",
+        fileId: imageId,
+        scale: [1, 1],
+        crop: null,
+      };
+
+      elementsArray.push(imageElement);
+
+      filesArray.push({
+        id: imageId,
+        mimeType: file.type,
+        dataURL: base64,
+        created: Date.now(),
+        lastRetrieved: Date.now(),
+      });
+
+      y += height + gap;
+    }
+
+    excalidrawAPI.updateScene({
+      elements: [...excalidrawAPI.getSceneElements(), ...elementsArray],
+    });
+    excalidrawAPI.addFiles(filesArray);
+
+    excalidrawAPI.setToast({
+      message: `Images inserted successfully!`,
+      closable: true,
+      duration: 2000,
+    });
+  };
+
+  const handleImages = async (e) => {
+    e.preventDefault();
+    const files = e.target.files;
+    if (!files.length) return;
+
+    insertImages(files);
+  };
+
   useEffect(() => {
     const handler = (e) => {
       if (e.key === "n") {
@@ -261,61 +364,80 @@ export const Editor = () => {
   }
 
   return (
-    <Excalidraw
-      excalidrawAPI={(api) => setExcalidrawAPI(api)}
-      initialData={initialData}
-      onChange={(elements, appState, files) => {
-        if (activeFolder && autoSave) {
-          if (timeoutId.current) {
-            clearTimeout(timeoutId.current);
+    <>
+      <Excalidraw
+        excalidrawAPI={(api) => setExcalidrawAPI(api)}
+        initialData={initialData}
+        onChange={(elements, appState, files) => {
+          if (activeFolder && autoSave) {
+            if (timeoutId.current) {
+              clearTimeout(timeoutId.current);
+            }
+            timeoutId.current = setTimeout(() => {
+              handleSave(elements, appState, files);
+            }, 500);
           }
-          timeoutId.current = setTimeout(() => {
-            handleSave(elements, appState, files);
-          }, 500);
-        }
-      }}
-    >
-      <MainMenu>
-        <MainMenu.Item
-          icon={<ArrowLeftToLine strokeWidth={1.5} />}
-          onClick={saveFile}
-        >
-          Save
-        </MainMenu.Item>
-        <MainMenu.Item
-          icon={<Sidebar strokeWidth={1.5} />}
-          onClick={toggleSidebar}
-        >
-          Toggle Sidebar
-        </MainMenu.Item>
-        <MainMenu.Item
-          icon={<LockKeyhole strokeWidth={1.5} />}
-          onClick={lockAllElements}
-        >
-          Lock All Elements
-        </MainMenu.Item>
-        <MainMenu.Item
-          icon={<LockKeyholeOpen strokeWidth={1.5} />}
-          onClick={unlockAllElements}
-        >
-          Unlock All Elements
-        </MainMenu.Item>
-        <MainMenu.Separator />
-        <MainMenu.DefaultItems.LoadScene />
-        <MainMenu.DefaultItems.Export />
-        <MainMenu.DefaultItems.SaveAsImage />
-        <MainMenu.Separator />
-        <MainMenu.DefaultItems.ChangeCanvasBackground />
-      </MainMenu>
-      <Footer>
-        <Button
-          className="ml-2 p-4 bg-[#28292c]! border! border-[#191919]!"
-          variant="outline"
-          onClick={toggleSidebar}
-        >
-          <Sidebar className="size-4" />
-        </Button>
-      </Footer>
-    </Excalidraw>
+        }}
+      >
+        <MainMenu>
+          <MainMenu.Item
+            icon={<ArrowLeftToLine strokeWidth={1.5} />}
+            onClick={saveFile}
+          >
+            Save
+          </MainMenu.Item>
+          <MainMenu.Item
+            icon={<Sidebar strokeWidth={1.5} />}
+            onClick={toggleSidebar}
+          >
+            Toggle Sidebar
+          </MainMenu.Item>
+          <MainMenu.Item
+            icon={<Images strokeWidth={1.5} />}
+            onSelect={() => imagesOpenRef.current.click()}
+          >
+            Insert Images
+          </MainMenu.Item>
+          <MainMenu.Item
+            icon={<LockKeyhole strokeWidth={1.5} />}
+            onClick={lockAllElements}
+          >
+            Lock All Elements
+          </MainMenu.Item>
+          <MainMenu.Item
+            icon={<LockKeyholeOpen strokeWidth={1.5} />}
+            onClick={unlockAllElements}
+          >
+            Unlock All Elements
+          </MainMenu.Item>
+          <MainMenu.Separator />
+          <MainMenu.DefaultItems.LoadScene />
+          <MainMenu.DefaultItems.Export />
+          <MainMenu.DefaultItems.SaveAsImage />
+          <MainMenu.Separator />
+          <MainMenu.DefaultItems.ChangeCanvasBackground />
+        </MainMenu>
+        <Footer>
+          <Button
+            className="ml-2 p-4 bg-[#28292c]! border! border-[#191919]!"
+            variant="outline"
+            onClick={toggleSidebar}
+          >
+            <Sidebar className="size-4" />
+          </Button>
+        </Footer>
+      </Excalidraw>
+
+      <input
+        ref={imagesOpenRef}
+        type="file"
+        multiple
+        onChange={handleImages}
+        accept="image/*"
+        style={{
+          display: "none",
+        }}
+      />
+    </>
   );
 };
