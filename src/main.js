@@ -140,6 +140,13 @@ ipcMain.handle("open-file", async (event, activeFolder) => {
       `${path.basename(activeFolder)}.json`
     );
 
+    const backupPath = path.join(
+      activeFolder,
+      `${path.basename(activeFolder)}.backup.json`
+    );
+
+    await fs.copyFile(filePath, backupPath);
+
     const fileContent = await fs.readFile(filePath, "utf-8");
     const data = JSON.parse(fileContent);
     const { elements: allElements, appState } = data;

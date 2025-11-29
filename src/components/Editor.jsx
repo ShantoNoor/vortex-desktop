@@ -129,8 +129,6 @@ export const Editor = () => {
       zenModeEnabled,
       zoom,
       viewModeEnabled,
-      offsetLeft,
-      offsetTop,
     } = appState;
 
     const data = await window.api.handleSave({
@@ -162,8 +160,6 @@ export const Editor = () => {
         zenModeEnabled,
         zoom,
         viewModeEnabled,
-        offsetLeft,
-        offsetTop,
       },
       savePath,
     });
@@ -232,17 +228,32 @@ export const Editor = () => {
     const { selectedElementIds } = excalidrawAPI.getAppState();
 
     if (Object.keys(selectedElementIds).length > 0) {
-      const selectedId = Object.keys(selectedElementIds)[0];
+      const selectedIds = Object.keys(selectedElementIds);
       const elements = excalidrawAPI.getSceneElements();
-      const { x, y } = elements.find((e) => e.id === selectedId);
+      let [x, y, maxx] = [Infinity, Infinity, -Infinity];
 
+      selectedIds.forEach((id) => {
+        const {
+          x: ex,
+          y: ey,
+          width: ewidth,
+        } = elements.find((e) => e.id === id);
+        x = Math.min(x, ex);
+        y = Math.min(y, ey);
+        maxx = Math.max(maxx, ex + ewidth);
+      });
+
+      const nice = 100;
       const seletedIds = { ...selectedElementIds };
       elements
+        .filter((e) => !e.locked)
         .filter((e) => {
-          if (d === "right") return e.x >= x;
-          else if (d === "left") return e.x <= x;
-          else if (d === "up") return e.y <= y;
-          else if (d === "down") return e.y >= y;
+          if (d === "right") return e.x >= x - nice;
+          else if (d === "left") return e.x <= x + nice;
+          else if (d === "up") return e.y <= y + nice;
+          else if (d === "down") return e.y >= y - nice;
+          else if (d === "slide_down")
+            return e.y >= y && e.x >= x - nice && e.x + e.width <= maxx + nice;
         })
         .forEach((e) => {
           seletedIds[e.id] = true;
@@ -447,16 +458,22 @@ export const Editor = () => {
         zoom(15);
       } else if (e.key === "m") {
         zoom(1);
-      } else if (e.key === ",") {
+      } else if (e.key === "," || e.key === "z") {
         selectDirection("left");
-      } else if (e.key === ".") {
+      } else if (e.key === "." || e.key === "c") {
         selectDirection("right");
       } else if (e.key === ";") {
         selectDirection("up");
-      } else if (e.key === "/") {
+      } else if (e.key === "'") {
         selectDirection("down");
+      } else if (e.key === "/" || e.key === "w") {
+        selectDirection("slide_down");
       } else if (e.key === "b") {
         toggleSidebar();
+      } else if (e.key === "[") {
+        lockAllElements();
+      } else if (e.key === "]") {
+        unlockAllElements();
       }
     };
     window.addEventListener("keydown", handler);

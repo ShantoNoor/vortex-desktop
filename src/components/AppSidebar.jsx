@@ -60,7 +60,6 @@ export function AppSidebar() {
 
   return (
     <>
-      <title>{activeFolder || "Undefined"}</title>
       <SidebarProvider>
         <SidebarContent className="overflow-x-hidden h-dvh no-scrollbar">
           <SidebarGroup>

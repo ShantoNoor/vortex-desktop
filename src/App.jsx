@@ -10,7 +10,8 @@ import { useEffect } from "react";
 import { Loader } from "./components/Loader";
 
 export default function App() {
-  const { showSidebar, setTree, savePath, loading } = useUiStore();
+  const { showSidebar, setTree, savePath, loading, activeFolder } =
+    useUiStore();
 
   useEffect(() => {
     async function run() {
@@ -26,6 +27,8 @@ export default function App() {
 
   return (
     <>
+      <title>{activeFolder || "Undefined"}</title>
+
       <ResizablePanelGroup
         autoSaveId="persistence"
         direction="horizontal"
