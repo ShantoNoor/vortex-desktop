@@ -499,6 +499,28 @@ export const Editor = () => {
             }, 500);
           }
         }}
+        validateEmbeddable={(link) => true}
+        renderEmbeddable={(element, appState) => {
+          if (element.link.includes("https://youtu.be/")) {
+            return (
+              <iframe
+                width={"100%"}
+                height={"100%"}
+                src={`https://www.youtube.com/embed/${element.link.split("/").pop()}`}
+              ></iframe>
+            );
+          }
+
+          if (element.link.endsWith(".mp4")) {
+            return <video src={element.link} controls></video>;
+          }
+
+          return (
+            <div className="h-full w-full flex justify-center items-center text-3xl">
+              Unable to Embed
+            </div>
+          );
+        }}
       >
         <MainMenu>
           <MainMenu.Item
