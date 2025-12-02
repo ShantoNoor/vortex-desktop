@@ -274,90 +274,98 @@ export const Editor = () => {
     }
   };
 
+  const insertImage = async (file, x, y, gap) => {
+    const options = {
+      maxSizeMB: 0.5,
+      useWebWorker: true,
+    };
+
+    file = await imageCompression(file, options);
+    const base64 = await fileToBase64(file);
+
+    // Load image to get width and height
+    let { width, height } = await getImageDimensions(base64);
+
+    const imageId = generateUUID();
+    const elementId = generateUUID();
+
+    let scale = 1;
+    if (gap === 0 && width < chunkWidth) {
+      scale = chunkWidth / width;
+      width = chunkWidth;
+      height = height * scale;
+    }
+
+    const imageElement = {
+      id: elementId,
+      type: "image",
+      x,
+      y,
+      width,
+      height,
+      angle: 0,
+      strokeColor: "transparent",
+      backgroundColor: "transparent",
+      fillStyle: "solid",
+      strokeWidth: 2,
+      strokeStyle: "solid",
+      roughness: 1,
+      opacity: 100,
+      groupIds: [],
+      frameId: null,
+      roundness: null,
+      version: 1,
+      versionNonce: Math.floor(Math.random() * 1000000),
+      isDeleted: false,
+      boundElements: null,
+      updated: Date.now(),
+      link: null,
+      locked: false,
+      status: "pending",
+      fileId: imageId,
+      scale: [1, 1],
+      crop: null,
+    };
+
+    excalidrawAPI.updateScene({
+      elements: [...excalidrawAPI.getSceneElements(), imageElement],
+    });
+    excalidrawAPI.addFiles([
+      {
+        id: imageId,
+        mimeType: file.type,
+        dataURL: base64,
+        created: Date.now(),
+        lastRetrieved: Date.now(),
+      },
+    ]);
+
+    return height;
+  };
+
   const insertImages = async (files, gap = 20) => {
     excalidrawAPI.setToast({
       message: `Inserting Images ...`,
       closable: false,
       duration: Infinity,
     });
+    setLoader(true);
 
     let x = 0;
     let y = 0;
-
-    const filesArray = [];
-    const elementsArray = [];
-
-    const options = {
-      maxSizeMB: 1,
-      useWebWorker: true,
-    };
-
+    let i = 1;
     for (const file of files) {
-      const fileToAdd = await imageCompression(file, options);
-      const base64 = await fileToBase64(fileToAdd);
-
-      // Load image to get width and height
-      let { width, height } = await getImageDimensions(base64);
-
-      const imageId = generateUUID();
-      const elementId = generateUUID();
-
-      let scale = 1;
-      if (gap === 0 && width < chunkWidth) {
-        scale = chunkWidth / width;
-        width = chunkWidth;
-        height = height * scale;
-      }
-
-      const imageElement = {
-        id: elementId,
-        type: "image",
-        x,
-        y,
-        width,
-        height,
-        angle: 0,
-        strokeColor: "transparent",
-        backgroundColor: "transparent",
-        fillStyle: "solid",
-        strokeWidth: 2,
-        strokeStyle: "solid",
-        roughness: 1,
-        opacity: 100,
-        groupIds: [],
-        frameId: null,
-        roundness: null,
-        version: 1,
-        versionNonce: Math.floor(Math.random() * 1000000),
-        isDeleted: false,
-        boundElements: null,
-        updated: Date.now(),
-        link: null,
-        locked: false,
-        status: "pending",
-        fileId: imageId,
-        scale: [1, 1],
-        crop: null,
-      };
-
-      elementsArray.push(imageElement);
-
-      filesArray.push({
-        id: imageId,
-        mimeType: file.type,
-        dataURL: base64,
-        created: Date.now(),
-        lastRetrieved: Date.now(),
-      });
-
+      const height = await insertImage(file, x, y, gap);
       y += height + gap;
+
+      excalidrawAPI.setToast({
+        message: `Image ${i++} inserted successfully!`,
+        closable: true,
+        duration: 2000,
+      });
     }
 
-    excalidrawAPI.updateScene({
-      elements: [...excalidrawAPI.getSceneElements(), ...elementsArray],
-    });
-    excalidrawAPI.addFiles(filesArray);
-
+    setLoader(false);
     excalidrawAPI.setToast({
       message: `Images inserted successfully!`,
       closable: true,
@@ -398,7 +406,8 @@ export const Editor = () => {
 
     setLoader(true);
 
-    const images = [];
+    let x = 0;
+    let y = 0;
 
     try {
       const arrayBuffer = await file.arrayBuffer();
@@ -426,10 +435,10 @@ export const Editor = () => {
         if (numSegments === 0)
           numSegments = Math.ceil(totalHeight / chunkHeight);
 
-        console.log({
-          numSegments,
-          chunkHeight,
-        });
+        // console.log({
+        //   numSegments,
+        //   chunkHeight,
+        // });
 
         for (let i = 0; i < numSegments; i++) {
           const segmentCanvas = document.createElement("canvas");
@@ -450,7 +459,15 @@ export const Editor = () => {
             transform: transform,
           }).promise;
 
-          images.push(await getCanvasBlob(segmentCanvas, "image/jpeg"));
+          const imageFile = await getCanvasBlob(segmentCanvas, "image/jpeg");
+          const imageHeight = await insertImage(imageFile, x, y, 0);
+          y += imageHeight;
+
+          excalidrawAPI.setToast({
+            message: `PDF loading ${i + 1}/${numSegments} ${pageNum}/${numPages} pages.`,
+            closable: true,
+            duration: 1000,
+          });
         }
       }
 
@@ -459,7 +476,6 @@ export const Editor = () => {
         closable: true,
         duration: 2000,
       });
-      await insertImages(images, 0);
       setLoader(false);
     } catch (error) {
       setLoader(false);
@@ -521,8 +537,19 @@ export const Editor = () => {
         }}
         validateEmbeddable={(link) => true}
         renderEmbeddable={(element, appState) => {
+          if (element.link.endsWith(".pdf")) {
+            return (
+              <webview
+                className="w-full h-full"
+                src={`${element.link}#view=FitH`}
+              ></webview>
+            );
+          }
+
           if (element.link.endsWith(".mp4")) {
-            return <video src={element.link} controls></video>;
+            return (
+              <webview className="w-full h-full" src={element.link}></webview>
+            );
           }
 
           return (
