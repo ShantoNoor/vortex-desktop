@@ -3,6 +3,7 @@ import {
   MainMenu,
   CaptureUpdateAction,
   Footer,
+  Sidebar,
 } from "@excalidraw/excalidraw";
 import "@excalidraw/excalidraw/index.css";
 import {
@@ -11,7 +12,7 @@ import {
   Images,
   LockKeyhole,
   LockKeyholeOpen,
-  Sidebar,
+  Sidebar as SidebarIcon,
 } from "lucide-react";
 import { useUiStore } from "../lib/store";
 import { useEffect, useRef, useState } from "react";
@@ -50,9 +51,11 @@ const initialData = {
 export const Editor = () => {
   const timeoutId = useRef("");
   const imagesOpenRef = useRef(null);
+  const tagRef = useRef(null);
   const [excalidrawAPI, setExcalidrawAPI] = useState(null);
   const [loading, setLoading] = useState(true);
   const [pdfOpen, setPdfOpen] = useState(false);
+  const [selectedElementId, setSelectedElementId] = useState(null);
 
   const {
     toggleSidebar,
@@ -488,6 +491,15 @@ export const Editor = () => {
     }
   };
 
+  const openTagWindow = () => {
+    const { selectedElementIds } = excalidrawAPI.getAppState();
+    const selectedElementIdsArray = Object.keys(selectedElementIds);
+    if (selectedElementIdsArray.length === 1) {
+      setSelectedElementId(selectedElementIdsArray[0]);
+      excalidrawAPI.toggleSidebar({ name: "tag", tab: "one" });
+    }
+  };
+
   useEffect(() => {
     const handler = (e) => {
       if (e.key === "n") {
@@ -510,6 +522,8 @@ export const Editor = () => {
         lockAllElements();
       } else if (e.key === "]") {
         unlockAllElements();
+      } else if (e.key === "j") {
+        openTagWindow();
       }
     };
     window.addEventListener("keydown", handler);
@@ -571,7 +585,7 @@ export const Editor = () => {
             Save
           </MainMenu.Item>
           <MainMenu.Item
-            icon={<Sidebar strokeWidth={1.5} />}
+            icon={<SidebarIcon strokeWidth={1.5} />}
             onClick={toggleSidebar}
           >
             Toggle Sidebar
@@ -609,13 +623,22 @@ export const Editor = () => {
           <MainMenu.Separator />
           <MainMenu.DefaultItems.ChangeCanvasBackground />
         </MainMenu>
+        <Sidebar name="tag">
+          <Sidebar.Header>{selectedElementId}</Sidebar.Header>
+          <Sidebar.Tabs style={{ padding: "0.5rem" }}>
+            <Sidebar.Tab tab="one">hi</Sidebar.Tab>
+            {/* <Sidebar.TabTriggers>
+              <Sidebar.TabTrigger tab="one">Add Date</Sidebar.TabTrigger>
+            </Sidebar.TabTriggers> */}
+          </Sidebar.Tabs>
+        </Sidebar>
         <Footer>
           <Button
             className="ml-2 p-4 bg-[#28292c]! border! border-[#191919]!"
             variant="outline"
             onClick={toggleSidebar}
           >
-            <Sidebar className="size-4" />
+            <SidebarIcon className="size-4" />
           </Button>
         </Footer>
       </Excalidraw>
