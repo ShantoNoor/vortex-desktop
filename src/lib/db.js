@@ -68,3 +68,7 @@ export function getByFolder(activeFolder) {
   );
   return stmt.all(activeFolder);
 }
+
+export function closeDB() {
+  db.close();
+}
