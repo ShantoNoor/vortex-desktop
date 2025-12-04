@@ -30,40 +30,45 @@ const TagManager = ({ selectedElementId, activeFolder }) => {
   return (
     <>
       <div className="space-y-2">
-        <Input
-          value={tag}
-          onChange={(e) => setTag(e.target.value)}
-          placeholder="Write tag here..."
-        />
-        <Button
-          variant="outline"
-          className="w-full"
-          onClick={async () => {
-            if (tag.trim() === "") return alert("Tag is empty");
-            const id = await window.db.create({
-              tag,
-              element: selectedElementId,
-              activeFolder,
-            });
-            setTags((t) => [
-              ...t,
-              {
-                id,
-                tag,
+        <div className="sticky top-0 bg-[#111]!">
+          <Input
+            value={tag}
+            onChange={(e) => setTag(e.target.value)}
+            placeholder="Write tag here..."
+            className="rounded-none "
+          />
+          <Button
+            variant="outline"
+            className="w-full my-2"
+            onClick={async () => {
+              if (tag.trim() === "") return alert("Tag is empty");
+              const id = await window.db.create({
+                tag: tag.trim(),
                 element: selectedElementId,
                 activeFolder,
-                edit: false,
-              },
-            ]);
-          }}
-        >
-          Add Tag
-        </Button>
-        <hr></hr>
+              });
+              setTags((t) => [
+                ...t,
+                {
+                  id,
+                  tag,
+                  element: selectedElementId,
+                  activeFolder,
+                  edit: false,
+                },
+              ]);
+              setTag("");
+            }}
+          >
+            Add Tag
+          </Button>
+          <hr></hr>
+        </div>
+
         {tags.map((t) => (
           <div
             key={t.id}
-            className="min-h-8 border flex gap-1 items-center justify-between px-2 py-1 rounded-md hover:border-blue-400 transition-colors"
+            className="min-h-8 m-2 border flex gap-1 items-center justify-between px-2 py-1 rounded-md hover:border-blue-400 transition-colors"
           >
             {!t.edit ? (
               <>

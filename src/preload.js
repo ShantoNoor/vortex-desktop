@@ -17,4 +17,7 @@ contextBridge.exposeInMainWorld("db", {
   getByElement: (element) => ipcRenderer.invoke("db:getByElement", element),
   getByFolder: (activeFolder) =>
     ipcRenderer.invoke("db:getByFolder", activeFolder),
+  searchTag: (text) => ipcRenderer.invoke("db:search-tag", text),
+  searchTagInFolder: (text, activeFolder) =>
+    ipcRenderer.invoke("db:search-tag-activeFolder", text, activeFolder),
 });

@@ -1,16 +1,31 @@
 import { useEffect, useState } from "react";
 import { useUiStore } from "../lib/store";
+import { Input } from "./ui/input";
 
 const TagSidebar = () => {
   const [tags, setTags] = useState([]);
+  const [tagsFiltered, setTagsFiltered] = useState([]);
+  const [search, setSearch] = useState("");
   const { setActiveFolder, activeFolder, setScrollElement } = useUiStore();
 
   useEffect(() => {
     (async function () {
       const data = await window.db.all();
       setTags(data);
+      setTagsFiltered(data);
     })();
   }, []);
+
+  useEffect(() => {
+    (async function () {
+      if (search !== "") {
+        const data = await window.db.searchTag(search);
+        setTagsFiltered(data);
+      } else {
+        setTagsFiltered(tags);
+      }
+    })();
+  }, [search]);
 
   if (tags.length === 0) {
     return (
@@ -20,11 +35,19 @@ const TagSidebar = () => {
     );
   }
   return (
-    <div className="space-y-2 p-2 overflow-x-hidden h-dvh no-scrollbar">
-      {tags.map((t) => (
+    <div className="space-y-2 overflow-x-hidden h-dvh no-scrollbar">
+      <div className="sticky top-0 z-10 bg-[#111] w-full">
+        <Input
+          placeholder="Search here..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="rounded-none"
+        />
+      </div>
+      {tagsFiltered.map((t) => (
         <div
           key={t.id}
-          className={`h-14 overflow-x-hidden border px-2 py-1 rounded-md cursor-pointer hover:border-blue-400 transition-colors flex flex-col justify-center ${t.activeFolder === activeFolder ? "border-white" : ""}`}
+          className={`min-h-8 m-2 min-w-screen overflow-x-hidden border px-2 py-1 rounded-md cursor-pointer hover:border-blue-400 transition-colors flex flex-col justify-center ${t.activeFolder === activeFolder ? "border-white" : ""}`}
           onClick={() => {
             if (t.activeFolder === activeFolder) {
               setScrollElement(t.element);
@@ -41,7 +64,6 @@ const TagSidebar = () => {
           }}
         >
           <p>{t.tag}</p>
-          <p className="text-[12px]">{t.activeFolder}</p>
         </div>
       ))}
     </div>

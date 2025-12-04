@@ -521,14 +521,6 @@ export const Editor = () => {
 
   useEffect(() => {
     const handler = (e) => {
-      if (e.key === "b") {
-        toggleSidebar();
-      } else if (e.key === "u") {
-        toggleRightSidebar();
-      } else if (e.key === "j") {
-        openTagWindow();
-      }
-
       if (!disableKey) {
         if (e.key === "n") {
           zoom(15);
@@ -548,6 +540,12 @@ export const Editor = () => {
           lockAllElements();
         } else if (e.key === "]") {
           unlockAllElements();
+        } else if (e.key === "b") {
+          toggleSidebar();
+        } else if (e.key === "u") {
+          toggleRightSidebar();
+        } else if (e.key === "j") {
+          openTagWindow();
         }
       }
     };
@@ -653,7 +651,7 @@ export const Editor = () => {
         </MainMenu>
         <Sidebar name="tag" className="bg-[#111]! w-[400px]!">
           <Sidebar.Header>{tabHeader}</Sidebar.Header>
-          <Sidebar.Tabs style={{ padding: "0.5rem" }}>
+          <Sidebar.Tabs className="no-scrollbar overflow-y-scroll">
             <Sidebar.Tab tab="tag-manager">
               <TagManager
                 selectedElementId={selectedElementId}

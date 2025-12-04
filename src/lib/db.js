@@ -72,3 +72,26 @@ export function getByFolder(activeFolder) {
 export function closeDB() {
   db.close();
 }
+
+export async function searchTagContains(text) {
+  const stmt = db.prepare(`
+    SELECT *
+    FROM items
+    WHERE tag LIKE ?
+    ORDER BY LOWER(tag) ASC
+  `);
+
+  return stmt.all("%" + text + "%");
+}
+
+export async function searchTagInActiveFolder(text, activeFolder) {
+  const stmt = db.prepare(`
+    SELECT *
+    FROM items
+    WHERE activeFolder = ?
+      AND tag LIKE ?
+    ORDER BY LOWER(tag) ASC
+  `);
+
+  return stmt.all(activeFolder, `%${text}%`);
+}

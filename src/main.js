@@ -13,6 +13,8 @@ import {
   getByTag,
   getRecord,
   initDB,
+  searchTagContains,
+  searchTagInActiveFolder,
   updateRecord,
 } from "./lib/db";
 
@@ -44,7 +46,7 @@ const createWindow = () => {
   }
 
   // Open the DevTools.
-  mainWindow.webContents.openDevTools();
+  // mainWindow.webContents.openDevTools();
 };
 
 // This method will be called when Electron has finished
@@ -224,4 +226,8 @@ ipcMain.handle("db:getByTag", (_, tag) => getByTag(tag));
 ipcMain.handle("db:getByElement", (_, element) => getByElement(element));
 ipcMain.handle("db:getByFolder", (_, activeFolder) =>
   getByFolder(activeFolder)
+);
+ipcMain.handle("db:search-tag", (_, text) => searchTagContains(text));
+ipcMain.handle("db:search-tag-activeFolder", (_, text, activeFolder) =>
+  searchTagInActiveFolder(text, activeFolder)
 );
