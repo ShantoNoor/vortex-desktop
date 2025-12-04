@@ -24,7 +24,7 @@ const TagViewer = ({ activeFolder }) => {
       {tags.map((t) => (
         <div
           key={t.id}
-          className="h-8 border px-2 py-1 rounded-md cursor-pointer hover:border-blue-400 transition-colors"
+          className="min-h-8 border px-2 py-1 rounded-md cursor-pointer hover:border-blue-400 transition-colors"
           onClick={() => {
             setScrollElement(t.element);
           }}

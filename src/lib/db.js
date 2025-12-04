@@ -63,6 +63,8 @@ export function getByElement(element) {
 }
 
 export function getByFolder(activeFolder) {
-  const stmt = db.prepare(`SELECT * FROM items WHERE activeFolder = ? ORDER BY tag ASC`);
+  const stmt = db.prepare(
+    `SELECT * FROM items WHERE activeFolder = ? ORDER BY tag ASC`
+  );
   return stmt.all(activeFolder);
 }

@@ -643,7 +643,7 @@ export const Editor = () => {
           <MainMenu.Separator />
           <MainMenu.DefaultItems.ChangeCanvasBackground />
         </MainMenu>
-        <Sidebar name="tag" className="bg-[#111]!">
+        <Sidebar name="tag" className="bg-[#111]! w-[400px]!">
           <Sidebar.Header>{tabHeader}</Sidebar.Header>
           <Sidebar.Tabs style={{ padding: "0.5rem" }}>
             <Sidebar.Tab tab="tag-manager">
