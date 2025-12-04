@@ -45,6 +45,7 @@ const TagViewer = ({ activeFolder }) => {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="rounded-none"
+          type="search"
         />
       </div>
       {tagsFiltered.map((t) => (

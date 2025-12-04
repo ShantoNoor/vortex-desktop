@@ -40,6 +40,7 @@ const TagSidebar = () => {
         <Input
           placeholder="Search here..."
           value={search}
+          type="search"
           onChange={(e) => setSearch(e.target.value)}
           className="rounded-none"
         />
