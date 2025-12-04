@@ -58,6 +58,7 @@ export const Editor = () => {
   const [pdfOpen, setPdfOpen] = useState(false);
   const [selectedElementId, setSelectedElementId] = useState(null);
   const [tabHeader, setTabHeader] = useState("");
+  const [disableKey, setDisableKey] = useState(false);
 
   const {
     toggleSidebar,
@@ -520,35 +521,39 @@ export const Editor = () => {
 
   useEffect(() => {
     const handler = (e) => {
-      if (e.key === "n") {
-        zoom(15);
-      } else if (e.key === "m") {
-        zoom(1);
-      } else if (e.key === ",") {
-        selectDirection("left");
-      } else if (e.key === ".") {
-        selectDirection("right");
-      } else if (e.key === ";") {
-        selectDirection("up");
-      } else if (e.key === "'") {
-        selectDirection("down");
-      } else if (e.key === "/" || e.key === "w") {
-        selectDirection("slide_down");
-      } else if (e.key === "b") {
+      if (e.key === "b") {
         toggleSidebar();
-      } else if (e.key === "[") {
-        lockAllElements();
-      } else if (e.key === "]") {
-        unlockAllElements();
-      } else if (e.key === "j") {
-        openTagWindow();
       } else if (e.key === "u") {
         toggleRightSidebar();
+      } else if (e.key === "j") {
+        openTagWindow();
+      }
+
+      if (!disableKey) {
+        if (e.key === "n") {
+          zoom(15);
+        } else if (e.key === "m") {
+          zoom(1);
+        } else if (e.key === ",") {
+          selectDirection("left");
+        } else if (e.key === ".") {
+          selectDirection("right");
+        } else if (e.key === ";") {
+          selectDirection("up");
+        } else if (e.key === "'") {
+          selectDirection("down");
+        } else if (e.key === "/" || e.key === "w") {
+          selectDirection("slide_down");
+        } else if (e.key === "[") {
+          lockAllElements();
+        } else if (e.key === "]") {
+          unlockAllElements();
+        }
       }
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [excalidrawAPI]);
+  }, [excalidrawAPI, disableKey]);
 
   if (loading) {
     return <Loader />;
@@ -568,6 +573,9 @@ export const Editor = () => {
               handleSave(elements, appState, files);
             }, 500);
           }
+
+          const isTagSidebarOpen = appState.openSidebar?.tab === "tag-manager";
+          setDisableKey(isTagSidebarOpen);
         }}
         validateEmbeddable={(link) => true}
         renderEmbeddable={(element, appState) => {
