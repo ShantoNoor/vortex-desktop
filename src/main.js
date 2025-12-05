@@ -4,7 +4,6 @@ import path from "node:path";
 import started from "electron-squirrel-startup";
 import { addFiles, getFiles } from "./lib/imagefs";
 import {
-  closeDB,
   createRecord,
   deleteRecord,
   getAllRecords,
@@ -46,7 +45,7 @@ const createWindow = () => {
   }
 
   // Open the DevTools.
-  // mainWindow.webContents.openDevTools();
+  mainWindow.webContents.openDevTools();
 };
 
 // This method will be called when Electron has finished
@@ -68,7 +67,6 @@ app.whenReady().then(() => {
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
 app.on("window-all-closed", () => {
-  closeDB();
   if (process.platform !== "darwin") {
     app.quit();
   }
@@ -224,10 +222,13 @@ ipcMain.handle("db:delete", (_, id) => deleteRecord(id));
 
 ipcMain.handle("db:getByTag", (_, tag) => getByTag(tag));
 ipcMain.handle("db:getByElement", (_, element) => getByElement(element));
-ipcMain.handle("db:getByFolder", (_, activeFolder) =>
-  getByFolder(activeFolder)
-);
+ipcMain.handle("db:getByFolder", (_, data) => getByFolder(data));
 ipcMain.handle("db:search-tag", (_, text) => searchTagContains(text));
-ipcMain.handle("db:search-tag-activeFolder", (_, text, activeFolder) =>
-  searchTagInActiveFolder(text, activeFolder)
+ipcMain.handle("db:search-tag-activeFolder", (_, data) =>
+  searchTagInActiveFolder(data)
+);
+
+ipcMain.handle("path:join", (_, data) => path.join(...data));
+ipcMain.handle("path:relative", (_, savePath, activeFolder) =>
+  path.relative(savePath, activeFolder)
 );

@@ -3,7 +3,7 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Check, Edit, Trash, X } from "lucide-react";
 
-const TagManager = ({ selectedElementId, activeFolder }) => {
+const TagManager = ({ selectedElementId, activeFolder, savePath }) => {
   const [tag, setTag] = useState("");
   const [edit, setEdit] = useState("");
   const [tags, setTags] = useState([]);
@@ -46,6 +46,7 @@ const TagManager = ({ selectedElementId, activeFolder }) => {
                 tag: tag.trim(),
                 element: selectedElementId,
                 activeFolder,
+                savePath,
               });
               setTags((t) => [
                 ...t,
@@ -112,6 +113,7 @@ const TagManager = ({ selectedElementId, activeFolder }) => {
                       tag: edit,
                       element: selectedElementId,
                       activeFolder,
+                      savePath,
                     });
                     const { changes } = res;
 

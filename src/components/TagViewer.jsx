@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useUiStore } from "../lib/store";
 import { Input } from "./ui/input";
 
-const TagViewer = ({ activeFolder }) => {
+const TagViewer = ({ activeFolder, savePath }) => {
   const [tags, setTags] = useState([]);
   const [tagsFiltered, setTagsFiltered] = useState([]);
 
@@ -12,7 +12,7 @@ const TagViewer = ({ activeFolder }) => {
 
   useEffect(() => {
     (async function () {
-      const data = await window.db.getByFolder(activeFolder);
+      const data = await window.db.getByFolder({ activeFolder, savePath });
       setTags(data);
       setTagsFiltered(data);
     })();
@@ -21,7 +21,11 @@ const TagViewer = ({ activeFolder }) => {
   useEffect(() => {
     (async function () {
       if (search !== "") {
-        const data = await window.db.searchTagInFolder(search, activeFolder);
+        const data = await window.db.searchTagInFolder({
+          search,
+          activeFolder,
+          savePath,
+        });
         setTagsFiltered(data);
       } else {
         setTagsFiltered(tags);

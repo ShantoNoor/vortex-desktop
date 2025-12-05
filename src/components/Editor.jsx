@@ -73,6 +73,7 @@ export const Editor = () => {
     setLoading: setLoader,
     scrollElement,
     setScrollElement,
+    loadingFolder,
   } = useUiStore();
 
   useEffect(() => {
@@ -95,7 +96,7 @@ export const Editor = () => {
 
   useEffect(() => {
     async function run() {
-      if (activeFolder && excalidrawAPI) {
+      if (!loadingFolder && activeFolder && excalidrawAPI) {
         excalidrawAPI.setToast({
           message: `Loading, please wait ...`,
           closable: false,
@@ -123,7 +124,7 @@ export const Editor = () => {
       }
     }
     run();
-  }, [excalidrawAPI]);
+  }, [excalidrawAPI, loadingFolder]);
 
   const handleSave = async (elements, appState, files) => {
     const fileList = Object.values(files);
@@ -656,10 +657,11 @@ export const Editor = () => {
               <TagManager
                 selectedElementId={selectedElementId}
                 activeFolder={activeFolder}
+                savePath={savePath}
               />
             </Sidebar.Tab>
             <Sidebar.Tab tab="tag-viewer">
-              <TagViewer activeFolder={activeFolder} />
+              <TagViewer activeFolder={activeFolder} savePath={savePath} />
             </Sidebar.Tab>
           </Sidebar.Tabs>
         </Sidebar>

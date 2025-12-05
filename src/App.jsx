@@ -15,9 +15,12 @@ export default function App() {
     showSidebar,
     setTree,
     savePath,
+    setSavePath,
     loading,
     activeFolder,
+    setActiveFolder,
     showSidebarRight,
+    setLoadingFolder,
   } = useUiStore();
 
   useEffect(() => {
@@ -26,7 +29,12 @@ export default function App() {
         const data = await window.api.getFiles(savePath);
         if (data.success) {
           setTree(data.tree);
+        } else {
+          alert(`Failed to Open: ${savePath} try to open a valid folder`);
+          setSavePath(null);
+          setActiveFolder(null);
         }
+        setLoadingFolder(false);
       }
     }
     run();

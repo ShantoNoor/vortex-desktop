@@ -5,6 +5,9 @@ contextBridge.exposeInMainWorld("api", {
   getFiles: (path) => ipcRenderer.invoke("get-files", path),
   handleSave: (payload) => ipcRenderer.invoke("save-file", payload),
   openFile: (activeFolder) => ipcRenderer.invoke("open-file", activeFolder),
+  joinPath: (data) => ipcRenderer.invoke("path:join", data),
+  relativePath: (savePath, activeFolder) =>
+    ipcRenderer.invoke("path:relative", savePath, activeFolder),
 });
 
 contextBridge.exposeInMainWorld("db", {
@@ -15,9 +18,8 @@ contextBridge.exposeInMainWorld("db", {
   delete: (id) => ipcRenderer.invoke("db:delete", id),
   getByTag: (tag) => ipcRenderer.invoke("db:getByTag", tag),
   getByElement: (element) => ipcRenderer.invoke("db:getByElement", element),
-  getByFolder: (activeFolder) =>
-    ipcRenderer.invoke("db:getByFolder", activeFolder),
+  getByFolder: (data) => ipcRenderer.invoke("db:getByFolder", data),
   searchTag: (text) => ipcRenderer.invoke("db:search-tag", text),
-  searchTagInFolder: (text, activeFolder) =>
-    ipcRenderer.invoke("db:search-tag-activeFolder", text, activeFolder),
+  searchTagInFolder: (data) =>
+    ipcRenderer.invoke("db:search-tag-activeFolder", data),
 });

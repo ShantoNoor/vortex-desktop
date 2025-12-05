@@ -1,5 +1,6 @@
 // db.js
 import Database from "better-sqlite3";
+import path from "path";
 
 let db;
 
@@ -19,12 +20,15 @@ export function initDB(dbPath) {
   return db;
 }
 
-export function createRecord({ element, tag, activeFolder }) {
+export function createRecord({ element, tag, activeFolder, savePath }) {
+  const relativeActiveFolder = path.relative(savePath, activeFolder);
+
   const stmt = db.prepare(`
     INSERT INTO items (element, tag, activeFolder)
     VALUES (?, ?, ?)
   `);
-  const info = stmt.run(element, tag, activeFolder);
+
+  const info = stmt.run(element, tag, relativeActiveFolder);
   return info.lastInsertRowid;
 }
 
@@ -38,13 +42,15 @@ export function getAllRecords() {
   return stmt.all();
 }
 
-export function updateRecord(id, { element, tag, activeFolder }) {
+export function updateRecord(id, { element, tag, activeFolder, savePath }) {
+  const relativeActiveFolder = path.relative(savePath, activeFolder);
+
   const stmt = db.prepare(`
     UPDATE items
     SET element = ?, tag = ?, activeFolder = ?
     WHERE id = ?
   `);
-  return stmt.run(element, tag, activeFolder, id);
+  return stmt.run(element, tag, relativeActiveFolder, id);
 }
 
 export function deleteRecord(id) {
@@ -62,15 +68,13 @@ export function getByElement(element) {
   return stmt.all(element);
 }
 
-export function getByFolder(activeFolder) {
+export function getByFolder({ activeFolder, savePath }) {
+  const relativeActiveFolder = path.relative(savePath, activeFolder);
+
   const stmt = db.prepare(
     `SELECT * FROM items WHERE activeFolder = ? ORDER BY tag ASC`
   );
-  return stmt.all(activeFolder);
-}
-
-export function closeDB() {
-  db.close();
+  return stmt.all(relativeActiveFolder);
 }
 
 export async function searchTagContains(text) {
@@ -84,7 +88,13 @@ export async function searchTagContains(text) {
   return stmt.all("%" + text + "%");
 }
 
-export async function searchTagInActiveFolder(text, activeFolder) {
+export async function searchTagInActiveFolder({
+  text,
+  activeFolder,
+  savePath,
+}) {
+  const relativeActiveFolder = path.relative(savePath, activeFolder);
+
   const stmt = db.prepare(`
     SELECT *
     FROM items
@@ -93,5 +103,5 @@ export async function searchTagInActiveFolder(text, activeFolder) {
     ORDER BY LOWER(tag) ASC
   `);
 
-  return stmt.all(activeFolder, `%${text}%`);
+  return stmt.all(relativeActiveFolder, `%${text}%`);
 }

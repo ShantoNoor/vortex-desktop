@@ -13,8 +13,10 @@ export const useUiStore = create(
       reload: 0,
       loading: false,
       scrollElement: null,
+      loadingFolder: true,
       toggleSidebar: () =>
         set((state) => ({ showSidebar: !state.showSidebar })),
+      setLoadingFolder: (loadingFolder) => set(() => ({ loadingFolder })),
       toggleRightSidebar: () =>
         set((state) => ({ showSidebarRight: !state.showSidebarRight })),
       openSidebar: () => set(() => ({ showSidebar: true })),
