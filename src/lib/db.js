@@ -1,6 +1,7 @@
 // db.js
 import Database from "better-sqlite3";
 import path from "path";
+import fs from "fs";
 
 let db;
 
@@ -104,4 +105,50 @@ export async function searchTagInActiveFolder({
   `);
 
   return stmt.all(relativeActiveFolder, `%${text}%`);
+}
+
+export function cleanupDeletedFolders(savePath) {
+  const stmt = db.prepare(`SELECT DISTINCT activeFolder FROM items`);
+  const rows = stmt.all();
+
+  const deleteStmt = db.prepare(`DELETE FROM items WHERE activeFolder = ?`);
+
+  for (const row of rows) {
+    const folderName = row.activeFolder;
+    if (!folderName) continue;
+
+    const folderPath = path.join(savePath, folderName);
+
+    if (!fs.existsSync(folderPath)) {
+      deleteStmt.run(folderName);
+      // console.log("Removed orphaned DB data for:", folderName);
+    }
+  }
+}
+
+export function cleanupFolderElements(savePath, activeFolder, allElementIds) {
+  const relativeActiveFolder = path.relative(savePath, activeFolder);
+
+  const stmt = db.prepare(`
+    SELECT DISTINCT element
+    FROM items 
+    WHERE activeFolder = ?
+  `);
+
+  const rows = stmt.all(relativeActiveFolder);
+  const dbElements = rows.map((r) => r.element);
+
+  const deleteStmt = db.prepare(`
+    DELETE FROM items 
+    WHERE activeFolder = ? AND element = ?
+  `);
+
+  for (const element of dbElements) {
+    if (!allElementIds.includes(element)) {
+      deleteStmt.run(relativeActiveFolder, element);
+      // console.log(
+      //   `Removed orphan element ${element} from folder ${activeFolder}`
+      // );
+    }
+  }
 }

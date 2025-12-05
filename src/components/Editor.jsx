@@ -104,7 +104,7 @@ export const Editor = () => {
         });
         setLoader(true);
 
-        const data = await window.api.openFile(activeFolder);
+        const data = await window.api.openFile({ activeFolder, savePath });
 
         if (data.success) {
           ids = new Set(data.idList);
@@ -116,9 +116,11 @@ export const Editor = () => {
           });
 
           excalidrawAPI.addFiles(data.files);
+          setAutoSave(true);
+        } else {
+          setActiveFolder(null);
         }
 
-        setAutoSave(true);
         excalidrawAPI.setToast(null);
         setLoader(false);
       }

@@ -4,6 +4,8 @@ import path from "node:path";
 import started from "electron-squirrel-startup";
 import { addFiles, getFiles } from "./lib/imagefs";
 import {
+  cleanupDeletedFolders,
+  cleanupFolderElements,
   createRecord,
   deleteRecord,
   getAllRecords,
@@ -98,6 +100,7 @@ ipcMain.handle("get-files", async (event, folderPath) => {
   try {
     const files = await readDirRecursive(folderPath);
     initDB(path.join(folderPath, `${path.basename(folderPath)}.db`));
+    cleanupDeletedFolders(folderPath);
 
     return { success: true, tree: files };
   } catch (err) {
@@ -150,7 +153,7 @@ ipcMain.handle("save-file", async (event, payload) => {
   }
 });
 
-ipcMain.handle("open-file", async (event, activeFolder) => {
+ipcMain.handle("open-file", async (event, { activeFolder, savePath }) => {
   try {
     // 3️⃣ Save drawing.json
     const filePath = path.join(
@@ -169,6 +172,9 @@ ipcMain.handle("open-file", async (event, activeFolder) => {
     const data = JSON.parse(fileContent);
     const { elements: allElements, appState } = data;
     const elements = allElements.filter((el) => !el.isDeleted);
+
+    const allElementIds = elements.map((e) => e.id);
+    cleanupFolderElements(savePath, activeFolder, allElementIds);
 
     const idList = elements
       .filter((e) => e.type === "image")
