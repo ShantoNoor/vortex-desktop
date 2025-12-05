@@ -54,7 +54,7 @@ export default function App() {
             <ResizablePanel
               className="bg-[#111]"
               id="sidebar"
-              defaultSize={25}
+              defaultSize={20}
               order={1}
             >
               <AppSidebar />
@@ -71,7 +71,7 @@ export default function App() {
             <ResizablePanel
               className="bg-[#111]"
               id="sidebar-right"
-              defaultSize={25}
+              defaultSize={20}
               order={3}
             >
               <TagSidebar />

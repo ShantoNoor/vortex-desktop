@@ -42,20 +42,20 @@ const TagViewer = ({ activeFolder, savePath }) => {
   }
 
   return (
-    <div className="space-y-2">
+    <div className="text-lg">
       <div className="sticky top-0 z-10 bg-[#111] w-full">
         <Input
           placeholder="Search here..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="rounded-none"
+          className="rounded-none text-lg!"
           // type="search"
         />
       </div>
       {tagsFiltered.map((t) => (
         <div
           key={t.id}
-          className="min-h-8 m-2 border px-2 py-1 rounded-md cursor-pointer hover:border-blue-400 transition-colors"
+          className="min-h-8 border px-3 py-1 cursor-pointer hover:bg-[#222]! transition-colors"
           onClick={() => {
             setScrollElement(t.element);
           }}

@@ -29,17 +29,17 @@ const TagManager = ({ selectedElementId, activeFolder, savePath }) => {
 
   return (
     <>
-      <div className="space-y-2">
-        <div className="sticky top-0 bg-[#111]!">
+      <div className="text-lg">
+        <div className="space-y-0.5 sticky top-0 bg-[#111]!">
           <Input
             value={tag}
             onChange={(e) => setTag(e.target.value)}
             placeholder="Write tag here..."
-            className="rounded-none "
+            className="rounded-none text-lg!"
           />
           <Button
             variant="outline"
-            className="w-full my-2"
+            className="w-full rounded-none text-md!"
             onClick={async () => {
               if (tag.trim() === "") return alert("Tag is empty");
               const id = await window.db.create({
@@ -63,19 +63,18 @@ const TagManager = ({ selectedElementId, activeFolder, savePath }) => {
           >
             Add Tag
           </Button>
-          <hr></hr>
         </div>
 
         {tags.map((t) => (
           <div
             key={t.id}
-            className="min-h-8 m-2 border flex gap-1 items-center justify-between px-2 py-1 rounded-md hover:border-blue-400 transition-colors"
+            className="min-h-8 border flex gap-1 items-center justify-between  hover:bg-[#222] transition-colors"
           >
             {!t.edit ? (
               <>
-                <p className="flex-1">{t.tag}</p>
+                <p className="flex-1 py-1 px-3">{t.tag}</p>
                 <Edit
-                  className="cursor-pointer size-3"
+                  className="cursor-pointer size-4"
                   onClick={() => {
                     setEdit(t.tag);
                     setTags((its) =>
@@ -86,7 +85,7 @@ const TagManager = ({ selectedElementId, activeFolder, savePath }) => {
                   }}
                 />
                 <Trash
-                  className="cursor-pointer size-3"
+                  className="cursor-pointer size-4"
                   onClick={async () => {
                     if (!confirm("Sure? You want to delete ...")) return;
                     const res = await window.db.delete(t.id);
@@ -101,10 +100,10 @@ const TagManager = ({ selectedElementId, activeFolder, savePath }) => {
                 <Input
                   value={edit}
                   onChange={(e) => setEdit(e.target.value)}
-                  className="h-7"
+                  className="flex-1 rounded-none text-lg!"
                 />
                 <Check
-                  className="cursor-pointer size-3"
+                  className="cursor-pointer size-4"
                   onClick={async () => {
                     if (edit.trim() === "")
                       return alert("Can not update empty value.");
@@ -130,7 +129,7 @@ const TagManager = ({ selectedElementId, activeFolder, savePath }) => {
                   }}
                 />
                 <X
-                  className="cursor-pointer size-3"
+                  className="cursor-pointer size-4"
                   onClick={() => {
                     setTags((its) =>
                       its.map((it) =>

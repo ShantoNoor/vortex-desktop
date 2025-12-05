@@ -1,6 +1,7 @@
 import { useEffect, useReducer, useState } from "react";
 import { useUiStore } from "../lib/store";
 import { Input } from "./ui/input";
+import { Link } from "lucide-react";
 
 const TagSidebar = () => {
   const [tags, setTags] = useState([]);
@@ -56,7 +57,7 @@ const TagSidebar = () => {
   }
 
   return (
-    <div className="space-y-2 overflow-x-hidden h-dvh no-scrollbar">
+    <div className="overflow-x-hidden h-dvh no-scrollbar">
       <div className="sticky top-0 z-10 bg-[#111] w-full">
         <Input
           placeholder="Search here..."
@@ -69,7 +70,7 @@ const TagSidebar = () => {
       {tagsFiltered.map((t) => (
         <div
           key={t.id}
-          className={`min-h-8 m-2 min-w-screen overflow-x-hidden border px-2 py-1 rounded-md cursor-pointer hover:border-blue-400 transition-colors flex flex-col justify-center ${t.activeFolder === relativeActiveFolder ? "border-white" : ""}`}
+          className={`min-h-8 text-lg m-0 min-w-screen overflow-x-hidden px-2 py-1 border rounded-none cursor-pointer hover:bg-[#222] transition-colors flex flex-col justify-center ${t.activeFolder === relativeActiveFolder ? "bg-[#222]" : ""}`}
           onClick={async () => {
             const tactiveFolder = await window.api.joinPath([
               savePath,
@@ -89,7 +90,10 @@ const TagSidebar = () => {
             }
           }}
         >
-          <p>{t.tag}</p>
+          <div className="flex items-center gap-1">
+            <Link className="size-4" />
+            <p className="flex-1">{t.tag}</p>
+          </div>
         </div>
       ))}
     </div>

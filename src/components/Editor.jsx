@@ -517,7 +517,7 @@ export const Editor = () => {
       setTabHeader(selectedElementIdsArray[0]);
       excalidrawAPI.toggleSidebar({ name: "tag", tab: "tag-manager" });
     } else {
-      setTabHeader("All Tags");
+      setTabHeader("Tags");
       excalidrawAPI.toggleSidebar({ name: "tag", tab: "tag-viewer" });
     }
   };
