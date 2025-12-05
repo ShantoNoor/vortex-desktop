@@ -22,7 +22,7 @@ const TagViewer = ({ activeFolder, savePath }) => {
     (async function () {
       if (search !== "") {
         const data = await window.db.searchTagInFolder({
-          search,
+          text: search,
           activeFolder,
           savePath,
         });
@@ -49,7 +49,7 @@ const TagViewer = ({ activeFolder, savePath }) => {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="rounded-none"
-          type="search"
+          // type="search"
         />
       </div>
       {tagsFiltered.map((t) => (
