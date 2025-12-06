@@ -13,16 +13,19 @@ export function CopyButton({ value, variant = "ghost", className }) {
   }, [hasCopied]);
 
   return (
-    <Button
-      variant={variant}
-      className={cn("relative text-foreground hover:bg-accent", className)}
-      onClick={() => {
+    <span
+      className="cursor-pointer"
+      onClick={(e) => {
+        e.stopPropagation();
         navigator.clipboard.writeText(value);
         setHasCopied(true);
       }}
     >
-      <span className="sr-only">Copy</span>
-      {hasCopied ? <CheckIcon /> : <ClipboardIcon />}
-    </Button>
+      {hasCopied ? (
+        <CheckIcon className="size-4" />
+      ) : (
+        <ClipboardIcon className="size-4" />
+      )}
+    </span>
   );
 }

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useUiStore } from "../lib/store";
 import { Input } from "./ui/input";
+import { CopyButton } from "./CopyButton";
 
 const TagViewer = ({ activeFolder, savePath }) => {
   const [tags, setTags] = useState([]);
@@ -55,12 +56,15 @@ const TagViewer = ({ activeFolder, savePath }) => {
       {tagsFiltered.map((t) => (
         <div
           key={t.id}
-          className="min-h-8 border px-3 py-1 cursor-pointer hover:bg-[#222]! transition-colors"
+          className="min-h-8  border pl-3 py-1 cursor-pointer hover:border-blue-400! transition-colors"
           onClick={() => {
             setScrollElement(t.element);
           }}
         >
-          <p>{t.tag}</p>
+          <div className="flex items-center justify-between">
+            <p className="flex-1 overflow-hidden">{t.tag}</p>
+            <CopyButton value={t.tag} />
+          </div>
         </div>
       ))}
     </div>

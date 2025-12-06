@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Check, Edit, Trash, X } from "lucide-react";
+import { CopyButton } from "./CopyButton";
 
 const TagManager = ({ selectedElementId, activeFolder, savePath }) => {
   const [tag, setTag] = useState("");
@@ -37,6 +38,7 @@ const TagManager = ({ selectedElementId, activeFolder, savePath }) => {
             placeholder="Write tag here..."
             className="rounded-none text-lg!"
           />
+
           <Button
             variant="outline"
             className="w-full rounded-none text-md!"
@@ -68,18 +70,21 @@ const TagManager = ({ selectedElementId, activeFolder, savePath }) => {
         {tags.map((t) => (
           <div
             key={t.id}
-            className="min-h-8 border flex gap-1 items-center justify-between  hover:bg-[#222] transition-colors"
+            className="min-h-8 border flex gap-1 items-center justify-between  hover:border-blue-400 transition-colors"
           >
             {!t.edit ? (
               <>
-                <p className="flex-1 py-1 px-3">{t.tag}</p>
+                <p className="flex-1 py-1 pl-3 overflow-hidden">{t.tag}</p>
+                <CopyButton value={t.tag} />
                 <Edit
                   className="cursor-pointer size-4"
                   onClick={() => {
                     setEdit(t.tag);
                     setTags((its) =>
                       its.map((it) =>
-                        it.id !== t.id ? it : { ...it, edit: true }
+                        it.id !== t.id
+                          ? { ...it, edit: false }
+                          : { ...it, edit: true }
                       )
                     );
                   }}

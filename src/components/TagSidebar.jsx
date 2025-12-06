@@ -1,14 +1,20 @@
 import { useEffect, useReducer, useState } from "react";
 import { useUiStore } from "../lib/store";
 import { Input } from "./ui/input";
-import { Link } from "lucide-react";
+import { FilePenLine, Link, X } from "lucide-react";
+import { CopyButton } from "./CopyButton";
 
 const TagSidebar = () => {
   const [tags, setTags] = useState([]);
   const [tagsFiltered, setTagsFiltered] = useState([]);
   const [search, setSearch] = useState("");
-  const { setActiveFolder, activeFolder, setScrollElement, savePath } =
-    useUiStore();
+  const {
+    setActiveFolder,
+    activeFolder,
+    setScrollElement,
+    savePath,
+    toggleRightSidebar,
+  } = useUiStore();
   const [relativeActiveFolder, setRelativeActiveFolder] =
     useState(activeFolder);
 
@@ -59,6 +65,21 @@ const TagSidebar = () => {
   return (
     <div className="overflow-x-hidden h-dvh no-scrollbar">
       <div className="sticky top-0 z-10 bg-[#111] w-full">
+        <div
+          className={`min-h-8 text-lg  px-2 py-1 border flex justify-between items-center`}
+        >
+          <div className="overflow-x-hidden flex-1 ">
+            <div className="min-w-screen flex gap-1 items-center">
+              <FilePenLine className="size-5" />
+              <p>{relativeActiveFolder}</p>
+            </div>
+          </div>
+          <X
+            onClick={toggleRightSidebar}
+            className="size-5 hover:bg-[#222] hover:rounded cursor-pointer"
+          />
+        </div>
+
         <Input
           placeholder="Search here..."
           value={search}
@@ -70,7 +91,7 @@ const TagSidebar = () => {
       {tagsFiltered.map((t) => (
         <div
           key={t.id}
-          className={`min-h-8 text-lg m-0 min-w-screen overflow-x-hidden px-2 py-1 border rounded-none cursor-pointer hover:bg-[#222] transition-colors flex flex-col justify-center ${t.activeFolder === relativeActiveFolder ? "bg-[#222]" : ""}`}
+          className={`min-h-8 text-lg m-0 pl-2 py-1 border rounded-none cursor-pointer hover:border-blue-400 transition-colors flex items-center ${t.activeFolder === relativeActiveFolder ? "bg-[#222]" : ""}`}
           onClick={async () => {
             const tactiveFolder = await window.api.joinPath([
               savePath,
@@ -90,10 +111,13 @@ const TagSidebar = () => {
             }
           }}
         >
-          <div className="flex items-center gap-1">
-            <Link className="size-4" />
-            <p className="flex-1">{t.tag}</p>
+          <div className="overflow-x-hidden flex-1 ">
+            <div className="min-w-screen flex gap-1 items-center">
+              <Link className="size-4" />
+              <p className="flex-1">{t.tag}</p>
+            </div>
           </div>
+          <CopyButton value={t.tag} />
         </div>
       ))}
     </div>
