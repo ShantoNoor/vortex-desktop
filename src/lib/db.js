@@ -79,14 +79,21 @@ export function getByFolder({ activeFolder, savePath }) {
 }
 
 export async function searchTagContains(text) {
+  const words = text
+    .trim()
+    .split(/\s+/)
+    .map((w) => `%${w.toLowerCase()}%`);
+
+  const conditions = words.map(() => `LOWER(tag) LIKE ?`).join(" AND ");
+
   const stmt = db.prepare(`
     SELECT *
     FROM items
-    WHERE tag LIKE ?
+    WHERE ${conditions}
     ORDER BY LOWER(tag) ASC
   `);
 
-  return stmt.all("%" + text + "%");
+  return stmt.all(...words);
 }
 
 export async function searchTagInActiveFolder({
@@ -96,15 +103,22 @@ export async function searchTagInActiveFolder({
 }) {
   const relativeActiveFolder = path.relative(savePath, activeFolder);
 
+  const words = text
+    .trim()
+    .split(/\s+/)
+    .map((w) => `%${w.toLowerCase()}%`);
+
+  const conditions = words.map(() => `LOWER(tag) LIKE ?`).join(" AND ");
+
   const stmt = db.prepare(`
     SELECT *
     FROM items
     WHERE activeFolder = ?
-      AND tag LIKE ?
+      AND ${conditions}
     ORDER BY LOWER(tag) ASC
   `);
 
-  return stmt.all(relativeActiveFolder, `%${text}%`);
+  return stmt.all(relativeActiveFolder, ...words);
 }
 
 export function cleanupDeletedFolders(savePath) {
