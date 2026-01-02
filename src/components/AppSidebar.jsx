@@ -103,7 +103,7 @@ function Tree({ item }) {
       <SidebarMenuItem>
         <SidebarMenuButton
           isActive={name.path === activeFolder}
-          className="data-[active=true]:bg-accent"
+          className="data-[active=true]:bg-accent data-[active=true]:text-orange-400 data-[active=true]:hover:text-orange-400"
           onClick={() => {
             if (name.path === activeFolder) return;
             if (
@@ -134,7 +134,7 @@ function Tree({ item }) {
         <CollapsibleTrigger asChild>
           <SidebarMenuButton
             isActive={activeFolder?.includes(name)}
-            className="data-[active=true]:text-orange-400! data-[active=true]:bg-transparent! data-[active=true]:hover:bg-accent!"
+            className="data-[active=true]:text-orange-400 data-[active=true]:hover:text-orange-400! data-[active=true]:bg-transparent! data-[active=true]:hover:bg-accent!"
           >
             <ChevronRight className="transition-transform" />
             <Notebook />
